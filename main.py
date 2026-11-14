@@ -1,24 +1,63 @@
-# main.py
+class MiniNPU:
+    def __init__(self, weights, bias):
+        # 이제 NPU는 가중치(weights)뿐만 아니라 편향(bias)도 기억합니다.
+        self.weights = weights
+        self.bias = bias
 
-# 1. MAC 연산을 담당하는 함수 만들기
-def calculate_mac(input_data, weight_data):
-    # 결과를 저장할 변수를 0으로 시작합니다.
-    result = 0
-    
-    # 입력 데이터와 가중치 데이터를 하나씩 꺼내서 곱하고 더합니다.
-    for i in range(len(input_data)):
-        result += input_data[i] * weight_data[i]
+    def relu(self, x):
+        """ReLU 활성화 함수: 0보다 작으면 0, 크면 그대로 반환"""
+        if x > 0:
+            return x
+        else:
+            return 0
+
+    def run(self, input_data):
+        """입력 데이터를 받아 MAC -> Bias -> ReLU 순서로 연산 수행"""
+        total = 0
+        rows = len(input_data)
+        cols = len(input_data[0])
         
-    return result
+        # 1. MAC 연산
+        for i in range(rows):
+            for j in range(cols):
+                total += input_data[i][j] * self.weights[i][j]
+        
+        # 2. Bias(편향) 더하기
+        total += self.bias
+        
+        # 3. ReLU 활성화 함수 적용
+        final_result = self.relu(total)
+        
+        return final_result
 
-# 2. 실제로 잘 작동하는지 테스트해보기
+# --- 실행부 ---
 if __name__ == "__main__":
-    # 테스트용 데이터 (3개씩 들어있는 리스트)
-    test_input = [1, 2, 3]
-    test_weight = [0.5, 0.5, 0.5]
+    # 가중치 설정
+    my_weights = [
+        [0.5, 0.5],
+        [0.5, 0.5]
+    ]
     
-    # 함수 실행! (1*0.5 + 2*0.5 + 3*0.5 = 0.5 + 1.0 + 1.5 = 3.0)
-    output = calculate_mac(test_input, test_weight)
+    # 편향 설정 (예: -2.0)
+    my_bias = -2.0
     
-    print("--- NPU 시뮬레이터 테스트 ---")
-    print(f"결과값: {output}")
+    # NPU 객체 생성 (지능 업그레이드!)
+    npu = MiniNPU(my_weights, my_bias)
+    
+    # 입력 데이터
+    my_image = [
+        [1, 2],
+        [3, 4]
+    ]
+    
+    # 실행
+    result = npu.run(my_image)
+    print(f"NPU 최종 연산 결과: {result}")
+
+    # 테스트 데이터
+    weights = [[0.5, 0.5], [0.5, 0.5]]
+    bias = -2.0
+    input_data = [[1, 2], [3, 4]]
+    
+    npu = MiniNPU(weights, bias)
+    npu.run(input_data) 
